@@ -31,17 +31,22 @@ const P = {
 
 Erstelle ${s.cookDays} abgestimmte Gerichte. Zutaten-Logik: Packungen aufbrauchen, verderbliches früh einplanen.
 BUDGET STRIKT: schaetzkosten MUSS unter ${s.budgetEur}€ bleiben. Wenn Wünsche/Angebote das Budget sprengen würden, nur das Günstigste davon nehmen oder weglassen.
-KREATIVITÄT: Mix aus Klassikern UND weniger bekannten aber schnell machbaren Gerichten (z.B. Shakshuka, Gnocchi-Pfanne, Tortellini-Suppe, Piadina, Flammkuchen auf dem Herd, Gyros-Pfanne, Rösti). Nicht immer nur Pasta/Hack/Hähnchen — überrasch den Nutzer auch mal.
-WICHTIG: Vorräte (${s.pantry.join(', ')}) sind immer da. Gerichte NICHT danach ausrichten was der Nutzer gerade noch übrig hat — übrige Zutaten nur ZUSÄTZLICH einbauen wenn sinnvoll, aber die Gerichte sollen frisch und lecker sein.
-Klassisch europäisch + etwas amerikanisch/international erlaubt.
-${wish ? `WUNSCH: ${wish}` : ''}
-Produktnamen DEUTSCH (z.B. "1 Packung Hackfleisch 500g"), AH-NL Packungsgrößen.
+KREATIVITÄT: Abwechslung ist Pflicht. Nicht 2x dasselbe Protein. Mix aus Klassikern UND weniger bekannten aber leckeren Gerichten (Shakshuka, Gnocchi-Pfanne, Tortellini-Suppe, Piadina, Rösti, Gyros-Pfanne, Blumenkohl-Steaks, Halloumi-Pfanne, Linsen-Dal, Ramen, Okonomiyaki...). Denke kreativ — es gibt viele günstige, schnelle Gerichte die kaum jemand kennt aber jeder mag.
+VORRÄTE: (${s.pantry.join(', ')}) immer vorhanden — nicht einkaufen. Übrige Zutaten (falls angegeben) einplanen wenn sinnvoll, aber Gerichte sollen eigenständig und lecker sein, nicht ums Aufbrauchen herum gebaut.
+${wish ? `WUNSCH (als INSPIRATION, nicht als Pflicht): "${wish}" — lass dich davon inspirieren, aber übertreibe nicht. Wenn z.B. eine Zutat im Angebot ist: max 1-2 Gerichte damit, nicht alle. Wenn eine Küche gewünscht wird: 1-2 Gerichte in diese Richtung, Rest bleibt gemischt. Freiheit > Wörtlichkeit.` : ''}
 
 NUR JSON:
 {"schaetzkosten":28,"abfall":"...","einkauf_hinweis":"...","gerichte":[{"id":"g1","name":"...","beschreibung":"...","min":30,"hauptzutaten":["..."],"wein":null,"reihenfolge":1,"hinweis":"..."}]}`,
 
   swap: (s, others, dishName) => `${ctxLine(s)}
-Tausche "${dishName}" gegen ein ANDERES. Muss zu diesen Gerichten passen (Zutaten-Logik): ${others}. Budget bleibt unter ${s.budgetEur}€.
+Tausche "${dishName}" gegen ein komplett ANDERES Gericht.
+REGELN:
+- Das neue Gericht muss EIGENSTÄNDIG sein — es darf KEINE Reste oder übrig gebliebenen Zutaten von den anderen Gerichten voraussetzen.
+- Wenn möglich: teile eine frische Zutat mit einem anderen Gericht (z.B. beide brauchen Sahne oder Zwiebeln) — aber NUR wenn das sauber aufgeht, nicht erzwingen.
+- Wenn keine sinnvolle Überschneidung möglich ist: lieber ein eigenständiges, leckeres Gericht als eines das auf Reste baut.
+- Wenn die anderen Gerichte schon viel Hack/Hähnchen/etc. haben: ANDERES Protein oder vegetarisch wählen.
+- Andere Gerichte diese Woche (nur zur Info, keine Pflicht sich anzupassen): ${others}
+- Budget: Gesamtplan bleibt unter ${s.budgetEur}€.
 NUR JSON: {"id":"GLEICHE_ID","name":"...","beschreibung":"...","min":30,"hauptzutaten":["..."],"wein":null,"reihenfolge":GLEICHE_ZAHL,"hinweis":"..."}`,
 
   recipe: (s, dish) => `${recipeCtx(s)}
