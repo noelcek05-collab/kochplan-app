@@ -36,7 +36,8 @@ VORRÄTE: (${s.pantry.join(', ')}) immer vorhanden — nicht einkaufen. Übrige 
 ${wish ? `WUNSCH (als INSPIRATION, nicht als Pflicht): "${wish}" — lass dich davon inspirieren, aber übertreibe nicht. Wenn z.B. eine Zutat im Angebot ist: max 1-2 Gerichte damit, nicht alle. Wenn eine Küche gewünscht wird: 1-2 Gerichte in diese Richtung, Rest bleibt gemischt. Freiheit > Wörtlichkeit.` : ''}
 
 NUR JSON:
-{"schaetzkosten":28,"abfall":"...","einkauf_hinweis":"...","gerichte":[{"id":"g1","name":"...","beschreibung":"...","min":30,"hauptzutaten":["..."],"wein":null,"reihenfolge":1,"hinweis":"..."}]}`,
+{"schaetzkosten":28,"abfall":"...","einkauf_hinweis":"...","gerichte":[{"id":"g1","name":"...","beschreibung":"...","min":30,"hauptzutaten":["Hackfleisch 500g","Paprika"],"extras":["Paprikapulver edelsüß","BBQ-Soße","Tomatenmark"],"wein":null,"reihenfolge":1,"hinweis":"..."}]}
+extras = Gewürze, Saucen, Pasten die das Gericht BRAUCHT und die NICHT in den Standard-Vorräten (${s.pantry.join(', ')}) sind. Nur wirklich benötigte extras, keine Grundgewürze die eh jeder hat.`,
 
   swap: (s, others, dishName) => `${ctxLine(s)}
 Tausche "${dishName}" gegen ein komplett ANDERES Gericht.
@@ -47,7 +48,7 @@ REGELN:
 - Wenn die anderen Gerichte schon viel Hack/Hähnchen/etc. haben: ANDERES Protein oder vegetarisch wählen.
 - Andere Gerichte diese Woche (nur zur Info, keine Pflicht sich anzupassen): ${others}
 - Budget: Gesamtplan bleibt unter ${s.budgetEur}€.
-NUR JSON: {"id":"GLEICHE_ID","name":"...","beschreibung":"...","min":30,"hauptzutaten":["..."],"wein":null,"reihenfolge":GLEICHE_ZAHL,"hinweis":"...","neue_gesamtkosten":27}`,
+NUR JSON: {"id":"GLEICHE_ID","name":"...","beschreibung":"...","min":30,"hauptzutaten":["..."],"extras":["Paprikapulver","Sojasoße"],"wein":null,"reihenfolge":GLEICHE_ZAHL,"hinweis":"...","neue_gesamtkosten":27}`,
 
   recipe: (s, dish) => `${recipeCtx(s)}
 Rezept für "${dish.name}" — ${s.portions} Portionen, für 2 Mahlzeiten gekocht.
@@ -75,11 +76,12 @@ ${dish.wein ? `\n**Wein:** ${dish.wein}` : ''}
 
   shop: (s, dishes) => `Einkaufszettel für diese Gerichte: ${dishes}.
 Nutzer kauft bei Albert Heijn Amsterdam (NL). ALLE Produktnamen auf DEUTSCH.
-NIEMALS auf die Liste: ${s.exclude.join(', ')} — diese Zutaten kommen in keinem Gericht vor und werden NICHT eingekauft.
+NIEMALS auf die Liste: ${s.exclude.join(', ')} — nicht einkaufen.
 NICHT auf die Liste (immer vorhanden): ${s.pantry.join(', ')}.${s.leftovers ? ` Bereits vorhanden: ${s.leftovers}.` : ''}
-Gleiche Zutaten zusammenfassen. Mengen in realen AH-NL Packungsgrößen — nutze diese echten Größen:
-Hackfleisch: 300g oder 500g · Hähnchenbrust: 600g · Lachs: 2 Stück (~300g) · Pasta/Spaghetti: 500g · Reis: 500g oder 1kg · Sahne: 250ml · Schmand: 200g · Champignons: 250g oder 500g · Zwiebeln: Netz 1kg · Kartoffeln: 1kg oder 2kg (KEIN 1,5kg) · Paprika: einzeln (~80g/Stück) · Passierte Tomaten: 500g · Gehackte Tomaten: 400g Dose · Käse gerieben: 150g oder 200g
-Kategorien mit Emoji: 🥩 Fleisch/Fisch · 🥦 Gemüse · 🥛 Kühlregal · 🍝 Trocken/Konserven · 🧂 Gewürze · 🍷 Wein
+PFLICHT: Alle unter "Extras" genannten Gewürze, Saucen und Pasten MÜSSEN auf die Liste — außer sie stehen explizit in den Standard-Vorräten oben. Ohne diese Extras ist das Gericht nicht kochbar.
+Gleiche Zutaten zusammenfassen. Mengen in realen AH-NL Packungsgrößen:
+Hackfleisch: 300g oder 500g · Hähnchenbrust: 600g · Lachs: 2 Stück (~300g) · Pasta/Spaghetti: 500g · Reis: 500g oder 1kg · Sahne: 250ml · Schmand: 200g · Champignons: 250g oder 500g · Zwiebeln: Netz 1kg · Kartoffeln: 1kg oder 2kg · Paprika: einzeln · Passierte Tomaten: 500g · Gehackte Tomaten: 400g Dose · Käse gerieben: 150g oder 200g
+Kategorien mit Emoji: 🥩 Fleisch/Fisch · 🥦 Gemüse · 🥛 Kühlregal · 🍝 Trocken/Konserven · 🧂 Gewürze/Saucen · 🍷 Wein
 Kein Intro, direkt die Liste.`,
 
   today: (s, plan, dayName) => `Heute ${dayName}. Wochenplan (✓=gekocht): ${plan}. ${s.portions} Portionen/Kochvorgang.
@@ -357,7 +359,7 @@ export default function App() {
   const genShop = async () => {
     if (shopLoad || !bundle) return;
     setShopLoad(true); setShop('');
-    const r = await callClaude([{ role: 'user', content: P.shop(settings, bundle.gerichte.map(g => `${g.name} (Zutaten: ${g.hauptzutaten.join(', ')})`).join(' | ')) }], 'Du erstellst Einkaufslisten. Nur die Liste.', 1400);
+    const r = await callClaude([{ role: 'user', content: P.shop(settings, bundle.gerichte.map(g => `${g.name} (Zutaten: ${g.hauptzutaten.join(', ')}${g.extras?.length ? '; Extras: ' + g.extras.join(', ') : ''})`).join(' | ')) }], 'Du erstellst Einkaufslisten. Nur die Liste.', 1400);
     setShop(r.text || r.error); setShopLoad(false);
   };
 
