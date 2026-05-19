@@ -21,8 +21,11 @@ Einstellungen diese Woche: ${s.cookDays} Koch-Tage, ${s.portions} Portionen pro 
 ${stil}
 ${aufwand}
 Budget: maximal ${s.budgetEur}€ für den GESAMTEN Einkauf dieser ${s.cookDays} Koch-Tage zusammen (nicht pro Tag, nicht pro Woche - pro Einkauf). Das Budget steuert NUR wie teuer die Zutaten sein dürfen, NICHT wie aufwändig oder fleischig die Gerichte sind - die Art der Gerichte kommt allein aus Stil und Aufwand oben.
+AMSTERDAM PREISREFERENZ (Albert Heijn NL, circa): Hackfleisch 500g ~€3-4, Hähnchenbrust 600g ~€5-6, Lachs 2 Stück ~€5-6, Pasta 500g ~€1.50, Sahne 250ml ~€1.50, Käse 200g ~€2.50, Champignons 250g ~€1.50, Paprika ~€0.80/Stück. Alles ist in NL etwas teurer als in DE - rechne realistisch.
 Jedes Gericht wird für 2 Mahlzeiten gekocht (gleicher Tag abends ODER nächster Tag).
 NIEMALS verwenden: ${s.exclude.join(', ')}.
+STANDARD-VORRÄTE (immer zuhause, NICHT auf den Einkaufszettel): ${s.pantry.length > 0 ? s.pantry.join(', ') : 'keine'}.${s.leftovers ? `
+NOCH ÜBRIG vom letzten Einkauf: ${s.leftovers}. Diese Zutaten einplanen wo sinnvoll, damit sie nicht weggeworfen werden. Auf keinen Fall nochmals einkaufen lassen.` : ''}
 WICHTIG ZUR EINKAUFSLISTE: Der Nutzer kauft zwar bei Albert Heijn in den Niederlanden, ist aber Deutscher. Schreibe ALLE Produktnamen auf DEUTSCH (z.B. "1 Packung Champignons 250g", "1 Packung Hackfleisch 500g", "1 Becher Sahne 250ml") - NICHT auf Niederländisch. Trotzdem in den real bei AH erhältlichen Packungsgrößen, und Gerichte so planen dass Packungen aufgehen und nichts im Müll landet.
 Wenn ein Gericht Wein braucht: konkrete Kaufempfehlung auf Deutsch (Art + Beispiel, z.B. "trockener Rotwein, günstige Flasche, z.B. einfacher Merlot").`;
 }
@@ -239,6 +242,9 @@ export default function App() {
   const [exclude, setExclude] = useState(['Knoblauch', 'Oliven']);
   const [exInput, setExInput] = useState('');
   const [wish, setWish] = useState('');
+  const [leftovers, setLeftovers] = useState('');
+  const [pantry, setPantry] = useState(['Salz', 'Pfeffer', 'Öl', 'Zucker']);
+  const [pantryInput, setPantryInput] = useState('');
 
   const [bundle, setBundle] = useState(null);
   const [done, setDone] = useState({});
@@ -267,7 +273,7 @@ export default function App() {
   const rescueEnd = useRef(null);
   const cookEnd = useRef(null);
 
-  const settings = { cookDays, style, effort, budgetEur, portions, exclude };
+  const settings = { cookDays, style, effort, budgetEur, portions, exclude, leftovers, pantry };
 
   useEffect(() => {
     if (!document.querySelector('link[data-kp3]')) {
@@ -282,6 +288,8 @@ export default function App() {
     if (g('budgetEur') != null) setBudgetEur(g('budgetEur'));
     if (g('portions') != null) setPortions(g('portions'));
     if (g('exclude')) setExclude(g('exclude'));
+    if (g('pantry')) setPantry(g('pantry'));
+    if (g('leftovers')) setLeftovers(g('leftovers'));
     if (g('bundle')) setBundle(g('bundle'));
     if (g('done')) setDone(g('done'));
     if (g('recipes')) setRecipes(g('recipes'));
@@ -295,6 +303,7 @@ export default function App() {
   useEffect(() => { if (hydrated) store.set('budgetEur', budgetEur); }, [budgetEur, hydrated]);
   useEffect(() => { if (hydrated) store.set('portions', portions); }, [portions, hydrated]);
   useEffect(() => { if (hydrated) store.set('exclude', exclude); }, [exclude, hydrated]);
+  useEffect(() => { if (hydrated) store.set('pantry', pantry); }, [pantry, hydrated]);
   useEffect(() => { if (hydrated) store.set('bundle', bundle); }, [bundle, hydrated]);
   useEffect(() => { if (hydrated) store.set('done', done); }, [done, hydrated]);
   useEffect(() => { if (hydrated) store.set('recipes', recipes); }, [recipes, hydrated]);
@@ -474,8 +483,25 @@ export default function App() {
                   <Btn onClick={addEx} small>Hinzufügen</Btn>
                 </div>
               </Field>
+              <Field label="Standard-Vorräte (immer zuhause, gespeichert)">
+                <div style={{ fontSize: 12, color: C.ink3, marginBottom: 8 }}>Werden nicht auf den Einkaufszettel gesetzt</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+                  {pantry.map(x => (
+                    <span key={x} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, padding: '4px 8px 4px 11px', background: C.surf2, color: C.ink2, borderRadius: 100 }}>
+                      {x}<button onClick={() => setPantry(p => p.filter(i => i !== x))} style={{ border: 'none', background: 'none', cursor: 'pointer', color: C.ink3, display: 'flex', padding: 0 }}><X size={12} /></button>
+                    </span>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input value={pantryInput} onChange={e => setPantryInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { const v = pantryInput.trim(); if (v && !pantry.includes(v)) setPantry(p => [...p, v]); setPantryInput(''); } }} placeholder="z.B. Mehl, Butter, Essig" style={{ flex: 1, fontFamily: 'var(--font-body)', fontSize: 13, padding: '9px 13px', borderRadius: 10, border: `1px solid ${C.bd}`, background: C.surf, color: C.ink, outline: 'none' }} />
+                  <Btn onClick={() => { const v = pantryInput.trim(); if (v && !pantry.includes(v)) setPantry(p => [...p, v]); setPantryInput(''); }} small>Hinzufügen</Btn>
+                </div>
+              </Field>
+              <Field label="Noch übrig vom letzten Einkauf (optional)">
+                <textarea value={leftovers} onChange={e => setLeftovers(e.target.value)} placeholder="z.B. halbe Zwiebel, Karotten, Becher Sahne noch da" rows={2} style={{ width: '100%', resize: 'none', fontFamily: 'var(--font-body)', fontSize: 13, lineHeight: 1.5, padding: '10px 13px', borderRadius: 10, border: `1px solid ${C.bd}`, background: C.surf, color: C.ink, outline: 'none' }} />
+              </Field>
               <Field label="Wunsch diese Woche (optional)">
-                <textarea value={wish} onChange={e => setWish(e.target.value)} placeholder="z.B. Hähnchen ist im Angebot · wenig Zeit Mi/Do · letzte Woche schon Pasta gehabt" rows={2} style={{ width: '100%', resize: 'none', fontFamily: 'var(--font-body)', fontSize: 13, lineHeight: 1.5, padding: '10px 13px', borderRadius: 10, border: `1px solid ${C.bd}`, background: C.surf, color: C.ink, outline: 'none' }} />
+                <textarea value={wish} onChange={e => setWish(e.target.value)} placeholder="z.B. Hähnchen ist im Angebot · diese Woche asiatisch · letzte Woche schon Pasta" rows={2} style={{ width: '100%', resize: 'none', fontFamily: 'var(--font-body)', fontSize: 13, lineHeight: 1.5, padding: '10px 13px', borderRadius: 10, border: `1px solid ${C.bd}`, background: C.surf, color: C.ink, outline: 'none' }} />
               </Field>
               <Btn onClick={generate} disabled={genLoad} primary style={{ width: '100%', justifyContent: 'center', padding: '13px 0', fontSize: 14.5 }}>
                 {genLoad ? <><Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> Wird geplant…</> : <><Sparkles size={15} /> Woche generieren</>}
