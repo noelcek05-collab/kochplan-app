@@ -5,29 +5,22 @@ import { Plus, Minus, X, Send, Sparkles, Loader2, ArrowLeft, ChefHat, ShoppingBa
 
 function ctxLine(s) {
   const stil = {
-    alltag: 'ALLTAGSKÜCHE: einfache, sättigende, unkomplizierte Klassiker (Pasta, Schnitzel, Hackgerichte, Aufläufe auf dem Herd, Bratkartoffeln). Keine Experimente, keine ausgefallenen Zutaten oder Techniken.',
-    gemischt: 'GEMISCHT: meistens solide Alltagsgerichte, aber 1-2x pro Woche etwas Besonderes/Anspruchsvolleres zum Lernen.',
-    kulinarisch: 'KULINARISCH: der Nutzer will kochen LERNEN. Klassische europäische Technik-Gerichte (Saucen richtig ziehen, anbraten, ablöschen, reduzieren). Anspruchsvoller, aber Schritte trotzdem glasklar erklärt.'
+    alltag: 'Stil: ALLTAGSKÜCHE — einfache sättigende Klassiker (Pasta, Schnitzel, Hackgerichte, Bratkartoffeln). Keine ausgefallenen Techniken.',
+    gemischt: 'Stil: GEMISCHT — meistens solide Klassiker, 1-2x etwas Besonderes zum Lernen.',
+    kulinarisch: 'Stil: KULINARISCH — klassische europäische Techniken lernen (Saucen ziehen, ablöschen, reduzieren). Anspruchsvoller aber glasklar erklärt.'
   }[s.style];
-  const aufwand = {
-    schnell: 'Aufwand: SCHNELL — Gerichte sollen in max ~25 Min fertig sein.',
-    normal: 'Aufwand: NORMAL — 30 bis 45 Min sind okay.',
-    lang: 'Aufwand: AUCH MAL LÄNGER — bis ~60 Min erlaubt wenn das Gericht es wert ist.'
-  }[s.effort];
-  return `Nutzer: Student in Amsterdam, kauft bei Albert Heijn (NL) ein, KEIN Tiefkühler.
-GERÄTE: nur normale Pfannen, normale Kochtöpfe, ein Airfryer und ein Optigrill (Kontaktgrill).
-NICHT VORHANDEN: KEIN Backofen, KEIN Schmortopf/Bräter, KEIN Wok, KEINE Mikrowelle. Niemals Gerichte vorschlagen die Ofen oder Schmortopf brauchen (kein Überbacken, kein Schmoren im Ofen, keine Aufläufe die in den Ofen müssen, kein Braten im Ofen). Alles muss auf dem Herd, im Airfryer oder im Optigrill machbar sein.
-Einstellungen diese Woche: ${s.cookDays} Koch-Tage, ${s.portions} Portionen pro Kochvorgang (großzügig, hungriger Erwachsener - NIEMALS Diät-Portionen).
-${stil}
-${aufwand}
-Budget: maximal ${s.budgetEur}€ für den GESAMTEN Einkauf dieser ${s.cookDays} Koch-Tage zusammen (nicht pro Tag, nicht pro Woche - pro Einkauf). Das Budget steuert NUR wie teuer die Zutaten sein dürfen, NICHT wie aufwändig oder fleischig die Gerichte sind - die Art der Gerichte kommt allein aus Stil und Aufwand oben.
-AMSTERDAM PREISREFERENZ (Albert Heijn NL, circa): Hackfleisch 500g ~€3-4, Hähnchenbrust 600g ~€5-6, Lachs 2 Stück ~€5-6, Pasta 500g ~€1.50, Sahne 250ml ~€1.50, Käse 200g ~€2.50, Champignons 250g ~€1.50, Paprika ~€0.80/Stück. Alles ist in NL etwas teurer als in DE - rechne realistisch.
-Jedes Gericht wird für 2 Mahlzeiten gekocht (gleicher Tag abends ODER nächster Tag).
-NIEMALS verwenden: ${s.exclude.join(', ')}.
-STANDARD-VORRÄTE (immer zuhause, NICHT auf den Einkaufszettel): ${s.pantry.length > 0 ? s.pantry.join(', ') : 'keine'}.${s.leftovers ? `
-NOCH ÜBRIG vom letzten Einkauf: ${s.leftovers}. Diese Zutaten einplanen wo sinnvoll, damit sie nicht weggeworfen werden. Auf keinen Fall nochmals einkaufen lassen.` : ''}
-WICHTIG ZUR EINKAUFSLISTE: Der Nutzer kauft zwar bei Albert Heijn in den Niederlanden, ist aber Deutscher. Schreibe ALLE Produktnamen auf DEUTSCH (z.B. "1 Packung Champignons 250g", "1 Packung Hackfleisch 500g", "1 Becher Sahne 250ml") - NICHT auf Niederländisch. Trotzdem in den real bei AH erhältlichen Packungsgrößen, und Gerichte so planen dass Packungen aufgehen und nichts im Müll landet.
-Wenn ein Gericht Wein braucht: konkrete Kaufempfehlung auf Deutsch (Art + Beispiel, z.B. "trockener Rotwein, günstige Flasche, z.B. einfacher Merlot").`;
+  const aufwand = { schnell: 'Aufwand: max ~25 Min.', normal: 'Aufwand: 30–45 Min.', lang: 'Aufwand: bis ~60 Min erlaubt.' }[s.effort];
+  return `Nutzer: Student Amsterdam, kauft bei Albert Heijn (NL), KEIN Tiefkühler.
+GERÄTE: nur Pfannen, Kochtöpfe, Airfryer, Optigrill. KEIN Ofen, KEIN Schmortopf.
+${s.cookDays} Koch-Tage, ${s.portions} Portionen/Kochvorgang (großzügig, NIEMALS Diätportionen). Jedes Gericht = 2 Mahlzeiten.
+${stil} ${aufwand}
+Budget: HART max ${s.budgetEur}€ Gesamteinkauf. Preisreferenz AH-NL: Hackfleisch 500g ~€3.50, Hähnchen 600g ~€5.50, Lachs ~€6, Pasta ~€1.50, Sahne ~€1.50. NL ist teurer als DE.
+NIEMALS: ${s.exclude.join(', ')}.
+Vorräte (nicht einkaufen): ${s.pantry.length ? s.pantry.join(', ') : 'keine'}.${s.leftovers ? ` Noch übrig: ${s.leftovers} — einplanen, nicht nochmals kaufen.` : ''}`;
+}
+
+function recipeCtx(s) {
+  return `Nutzer kocht: ${s.portions} Portionen für 2 Mahlzeiten. KEIN Ofen, KEIN Schmortopf — nur Pfannen, Töpfe, Airfryer, Optigrill.`;
 }
 
 /* ═══════════ PROMPTS ═══════════ */
@@ -35,60 +28,52 @@ Wenn ein Gericht Wein braucht: konkrete Kaufempfehlung auf Deutsch (Art + Beispi
 const P = {
   bundle: (s, wish) => `${ctxLine(s)}
 
-Erstelle einen abgestimmten Wochenplan mit GENAU ${s.cookDays} Gerichten.
-KERN-REGEL: Die Gerichte MÜSSEN sich Zutaten teilen, sodass Albert-Heijn-Packungen komplett aufgebraucht werden (eine 250g Champignon-Packung → mehrere Pilzgerichte, ein Becher Sahne → mehrere Sahnegerichte). Verderbliches eher früh in der Woche.
-Die ART der Gerichte richtet sich nach Stil und Aufwand (siehe oben), NICHT nach dem Budget. Das Budget ist nur die Obergrenze für die Gesamt-Einkaufskosten - bleib darunter, aber lass es NICHT die Gerichte aufwändiger oder fleischiger machen.
-Klassisch europäisch (deutsch/französisch/italienisch/etwas amerikanisch).
-${wish ? `BESONDERS DIESE WOCHE BEACHTEN: ${wish}` : ''}
+Erstelle ${s.cookDays} abgestimmte Gerichte. Zutaten-Logik: Packungen aufbrauchen, verderbliches früh einplanen.
+BUDGET STRIKT: schaetzkosten MUSS unter ${s.budgetEur}€ bleiben. Wenn Wünsche/Angebote das Budget sprengen würden, nur das Günstigste davon nehmen oder weglassen.
+KREATIVITÄT: Mix aus Klassikern UND weniger bekannten aber schnell machbaren Gerichten (z.B. Shakshuka, Gnocchi-Pfanne, Tortellini-Suppe, Piadina, Flammkuchen auf dem Herd, Gyros-Pfanne, Rösti). Nicht immer nur Pasta/Hack/Hähnchen — überrasch den Nutzer auch mal.
+WICHTIG: Vorräte (${s.pantry.join(', ')}) sind immer da. Gerichte NICHT danach ausrichten was der Nutzer gerade noch übrig hat — übrige Zutaten nur ZUSÄTZLICH einbauen wenn sinnvoll, aber die Gerichte sollen frisch und lecker sein.
+Klassisch europäisch + etwas amerikanisch/international erlaubt.
+${wish ? `WUNSCH: ${wish}` : ''}
+Produktnamen DEUTSCH (z.B. "1 Packung Hackfleisch 500g"), AH-NL Packungsgrößen.
 
-NUR JSON, keine Erklärung:
-{"schaetzkosten":32,"abfall":"0 Zutaten landen im Müll","einkauf_hinweis":"kurzer Hinweis","gerichte":[{"id":"g1","name":"Name","beschreibung":"appetitlicher Satz","min":35,"hauptzutaten":["Hackfleisch","Paprika"],"wein":null,"reihenfolge":1,"hinweis":"z.B. verderblich, früh kochen"}]}
-schaetzkosten = geschätzte Gesamtkosten des Einkaufs in € (muss <= ${s.budgetEur} sein). wein = null oder konkrete Kaufempfehlung auf Deutsch als String. reihenfolge 1 = zuerst kochen.`,
+NUR JSON:
+{"schaetzkosten":28,"abfall":"...","einkauf_hinweis":"...","gerichte":[{"id":"g1","name":"...","beschreibung":"...","min":30,"hauptzutaten":["..."],"wein":null,"reihenfolge":1,"hinweis":"..."}]}`,
 
   swap: (s, others, dishName) => `${ctxLine(s)}
-Tausche das Gericht "${dishName}" gegen ein ANDERES aus. Es MUSS zu diesen anderen Gerichten der Woche passen (Zutaten-Logik erhalten, damit AH-Packungen aufgehen): ${others}.
-NUR JSON:
-{"id":"GLEICHE_ID","name":"Neuer Name","beschreibung":"Satz","min":35,"hauptzutaten":["..."],"wein":null,"reihenfolge":GLEICHE_ZAHL,"hinweis":"..."}`,
+Tausche "${dishName}" gegen ein ANDERES. Muss zu diesen Gerichten passen (Zutaten-Logik): ${others}. Budget bleibt unter ${s.budgetEur}€.
+NUR JSON: {"id":"GLEICHE_ID","name":"...","beschreibung":"...","min":30,"hauptzutaten":["..."],"wein":null,"reihenfolge":GLEICHE_ZAHL,"hinweis":"..."}`,
 
-  recipe: (s, dish) => `${ctxLine(s)}
-Erstelle ein SEHR PRÄZISES, narrensicheres Rezept für "${dish.name}" (${s.portions} Portionen, für 2 Mahlzeiten gekocht = entsprechend größere Mengen).
-Der Nutzer ist UNERFAHREN. Das Rezept muss so genau sein dass jemand der kaum kocht es ohne Vorwissen hinkriegt. Pflicht für JEDEN Schritt:
-- Sag explizit OB Öl/Butter/Fett benutzt wird, WELCHES (z.B. "neutrales Öl wie Sonnenblumenöl" oder "Butter"), und WIE VIEL (z.B. "2 EL").
-- Sag die HITZE konkret (z.B. "mittlere Hitze", "hohe Hitze", "Stufe 7 von 9").
-- Sag GENAU wann was in die Pfanne/den Topf kommt und in welcher Reihenfolge.
-- Sag die ZEIT pro Schritt (z.B. "ca. 4-5 Minuten") UND das Erkennungsmerkmal wann es fertig ist (z.B. "bis das Hack braun und krümelig ist", "bis die Zwiebeln glasig sind", "bis die Sauce eine sämige Konsistenz hat und an einem Löffel haften bleibt").
-- Geräte nur: Herd/Pfanne/Topf, Airfryer oder Optigrill. Niemals Ofen oder Schmortopf.
-Format auf Deutsch, GENAU so:
-**Zutaten** (für ${s.portions} Portionen, 2 Mahlzeiten)
-• Menge Zutat (deutsche Namen, AH-Packungsgrößen wo sinnvoll)
+  recipe: (s, dish) => `${recipeCtx(s)}
+Rezept für "${dish.name}" — ${s.portions} Portionen, wird für 2 Mahlzeiten gekocht.
+
+Schreibe es PRÄZISE und VOLLSTÄNDIG. Jeder Schritt braucht: Öl/Fett ja/nein + welches + Menge, Hitze konkret (z.B. "mittlere Hitze"), was wann reinkommt, Zeit pro Schritt, Erkennungsmerkmal wann fertig (z.B. "bis die Zwiebeln glasig sind").
+
+Format:
+**Zutaten** (${s.portions} Portionen / 2 Mahlzeiten)
+• Menge Zutat
 
 **Zubereitung**
-1. (Sehr konkreter Schritt mit Öl-Angabe, Hitze, Zeit, Erkennungsmerkmal)
-2. ...
-(So viele Schritte wie nötig, lieber ein Schritt mehr und genauer.)
+1. Schritt (Hitze, Öl/Fett, Zeit, Erkennungsmerkmal)
+...alle Schritte bis fertig...
 ${dish.wein ? `**Wein:** ${dish.wein}` : ''}
-**Reste:** Wie man die 2. Mahlzeit aufbewahrt und am nächsten Tag aufwärmt (kein Tiefkühler, keine Mikrowelle - also auf dem Herd aufwärmen).`,
+**Reste:** Im Kühlschrank aufbewahren, am nächsten Tag in der Pfanne aufwärmen (kein Tiefkühler).`,
 
-  shop: (s, dishes) => `${ctxLine(s)}
-Erstelle EINEN kompletten Einkaufszettel für diese Gerichte: ${dishes}.
-Fasse gleiche Zutaten zusammen, ALLES in echten Albert-Heijn-Packungsgrößen. Wein mit konkreter Empfehlung falls nötig.
-Format, Kategorien mit Emoji: 🥩 Fleisch/Fisch · 🥦 Gemüse/Obst · 🥛 Kühlregal · 🍝 Trocken · 🍷 Wein · 🧂 Gewürze/Sonstiges
-Kein Intro, direkt die Liste. Auf Deutsch.`,
+  shop: (s, dishes) => `Einkaufszettel für: ${dishes}.
+Nutzer kauft bei AH in Amsterdam (NL). Mengen in AH-Packungsgrößen. ALLE Namen auf DEUTSCH.
+NICHT auf die Liste: ${s.pantry.join(', ')}.${s.leftovers ? ` Bereits vorhanden: ${s.leftovers}.` : ''}
+Gleiche Zutaten zusammenfassen. Kategorien mit Emoji: 🥩 Fleisch/Fisch · 🥦 Gemüse · 🥛 Kühlregal · 🍝 Trocken/Konserven · 🧂 Gewürze · 🍷 Wein
+Kein Intro, direkt die Liste.`,
 
-  today: (s, plan, dayName) => `${ctxLine(s)}
-Heute ist ${dayName}. Wochenplan (✓=schon gekocht): ${plan}.
-Sag dem Nutzer in max 3 kurzen Sätzen was er heute kochen sollte (das nächste offene Gericht nach reihenfolge). Erwähne wenn er Zutaten-Reste eines früheren Gerichts mitnutzen kann. Locker, motivierend, knapp, Deutsch.`,
+  today: (s, plan, dayName) => `Heute ${dayName}. Wochenplan (✓=gekocht): ${plan}. ${s.portions} Portionen/Kochvorgang.
+Was soll heute gekocht werden? Max 3 kurze Sätze, locker, Deutsch. Erwähne Reste-Nutzung wenn sinnvoll.`,
 
-  emergency: (s, plan) => `${ctxLine(s)}
-Notfall: keine Zeit/Lust. Aktueller Plan: ${plan}.
-Schlage EIN sehr schnelles Gericht vor (max 15 Min) aus wahrscheinlich vorhandenen Wocheneinkauf-Zutaten + Standard-Vorräten. Max 3 Sätze, direkt, Deutsch.`,
+  emergency: (s, plan) => `Notfall, keine Zeit. Plan: ${plan}. Vorräte: ${s.pantry.join(', ')}.
+EIN Gericht max 15 Min aus wahrscheinlich vorhandenen Zutaten. Max 3 Sätze, direkt, Deutsch.`,
 
-  rescue: (s, plan) => `${ctxLine(s)}
-Du hilfst den Wochenplan zu retten wenn etwas schiefging (Zutat verdorben, Tag gesprengt, Produkt nicht bekommen, Angebot entdeckt). Aktueller Plan: ${plan}.
-Reagiere konkret und praktisch auf das Problem. Wenn ein Gericht ersetzt werden sollte, schlage eins vor das zu den restlichen Zutaten passt. Locker, kompakt, Deutsch.`,
+  rescue: (s, plan) => `Wochenplan retten. Plan: ${plan}.
+Problem des Nutzers konkret lösen. Falls Gericht getauscht werden sollte: passendes vorschlagen. Locker, kompakt, Deutsch.`,
 
-  cookChat: (s, dish) => `${ctxLine(s)}
-Der Nutzer kocht gerade "${dish.name}" und hat eine Frage dazu. Antworte sehr kurz und praktisch, Deutsch.`,
+  cookChat: (s, dish) => `Nutzer kocht "${dish.name}" (${s.portions} Portionen, Geräte: Pfanne/Topf/Airfryer/Optigrill, kein Ofen). Frage beantworten: sehr kurz, praktisch, Deutsch.`,
 };
 
 /* ═══════════ API ═══════════ */
@@ -316,7 +301,7 @@ export default function App() {
     if (!active || recipes[active.id]) return;
     let dead = false;
     setRecLoad(true);
-    callClaude([{ role: 'user', content: P.recipe(settings, active) }], 'Du bist ein präziser Koch-Assistent. Antworte nur mit dem Rezept im geforderten Format.')
+    callClaude([{ role: 'user', content: P.recipe(settings, active) }], 'Du bist ein präziser Koch-Assistent. Antworte nur mit dem Rezept im geforderten Format. Schreibe das Rezept VOLLSTÄNDIG bis zum Ende, brich niemals mitten im Rezept ab.', 3500)
       .then(r => { if (dead) return; if (r.text) setRecipes(p => ({ ...p, [active.id]: r.text })); setRecLoad(false); });
     return () => { dead = true; };
   }, [active?.id]);
