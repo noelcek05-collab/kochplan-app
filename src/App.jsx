@@ -14,13 +14,14 @@ function ctxLine(s) {
 GERÄTE: nur Pfannen, Kochtöpfe, Airfryer, Optigrill. KEIN Ofen, KEIN Schmortopf.
 ${s.cookDays} Koch-Tage, ${s.portions} Portionen/Kochvorgang (großzügig, NIEMALS Diätportionen). Jedes Gericht = 2 Mahlzeiten.
 ${stil} ${aufwand}
-Budget: HART max ${s.budgetEur}€ Gesamteinkauf. Preisreferenz AH-NL: Hackfleisch 500g ~€3.50, Hähnchen 600g ~€5.50, Lachs ~€6, Pasta ~€1.50, Sahne ~€1.50. NL ist teurer als DE.
+Budget: HART max ${s.budgetEur}€ Gesamteinkauf. Preisreferenz AH-NL: Hackfleisch 500g ~€4, Hähnchen 600g ~€6, Lachs 2 Stück ~€7, Pasta 500g ~€1.50, Sahne 250ml ~€1.80, Käse 200g ~€3, Champignons 250g ~€1.80, Paprika ~€1/Stück. NL ist teurer als DE, lieber 10-15% Aufschlag einrechnen.
 NIEMALS: ${s.exclude.join(', ')}.
 Vorräte (nicht einkaufen): ${s.pantry.length ? s.pantry.join(', ') : 'keine'}.${s.leftovers ? ` Noch übrig: ${s.leftovers} — einplanen, nicht nochmals kaufen.` : ''}`;
 }
 
 function recipeCtx(s) {
-  return `Nutzer kocht: ${s.portions} Portionen für 2 Mahlzeiten. KEIN Ofen, KEIN Schmortopf — nur Pfannen, Töpfe, Airfryer, Optigrill.`;
+  return `Nutzer kocht: ${s.portions} Portionen für 2 Mahlzeiten. KEIN Ofen, KEIN Schmortopf — nur Pfannen, Töpfe, Airfryer, Optigrill.
+NIEMALS diese Zutaten verwenden: ${s.exclude.join(', ')}. Auch nicht in Spuren oder als optionale Zugabe.`;
 }
 
 /* ═══════════ PROMPTS ═══════════ */
@@ -325,7 +326,7 @@ export default function App() {
     const r = await callClaude([{ role: 'user', content: P.swap(settings, others, dish.name) }], 'Du gibst nur valides JSON zurück.', 700);
     const j = r.text ? parseJSON(r.text) : null;
     if (j && j.name) {
-      setBundle(b => ({ ...b, gerichte: b.gerichte.map(g => g.id === dish.id ? { ...j, id: dish.id } : g) }));
+      setBundle(b => ({ ...b, gerichte: b.gerichte.map(g => g.id === dish.id ? { ...j, id: dish.id, reihenfolge: dish.reihenfolge } : g) }));
       setRecipes(p => { const n = { ...p }; delete n[dish.id]; return n; });
     }
     setSwapId(null);
