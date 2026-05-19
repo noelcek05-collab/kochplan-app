@@ -4,14 +4,27 @@ import { Plus, Minus, X, Send, Sparkles, Loader2, ArrowLeft, ChefHat, ShoppingBa
 /* ═══════════ CONTEXT BUILDER ═══════════ */
 
 function ctxLine(s) {
-  const time = { schnell: 'überwiegend schnelle Gerichte (≤25 Min)', mix: 'gemischte Kochzeiten', zeit: 'auch mal aufwändigere Gerichte erlaubt' }[s.timeMode];
-  const bud = { guenstig: 'sehr günstig (~20€/Woche)', normal: 'studenten-normal (~30€/Woche)', mehr: 'darf bis ~40€/Woche' }[s.budget];
-  return `Nutzer: Student in Amsterdam, kauft bei Albert Heijn ein, KEIN Tiefkühler.
-Einstellungen diese Woche: ${s.cookDays} Koch-Tage, ${s.portions} Portionen pro Kochvorgang (großzügig, hungriger Erwachsener - NIEMALS Diät-Portionen), ${time}, Budget ${bud}.
+  const stil = {
+    alltag: 'ALLTAGSKÜCHE: einfache, sättigende, unkomplizierte Klassiker (Pasta, Schnitzel, Hackgerichte, Aufläufe auf dem Herd, Bratkartoffeln). Keine Experimente, keine ausgefallenen Zutaten oder Techniken.',
+    gemischt: 'GEMISCHT: meistens solide Alltagsgerichte, aber 1-2x pro Woche etwas Besonderes/Anspruchsvolleres zum Lernen.',
+    kulinarisch: 'KULINARISCH: der Nutzer will kochen LERNEN. Klassische europäische Technik-Gerichte (Saucen richtig ziehen, anbraten, ablöschen, reduzieren). Anspruchsvoller, aber Schritte trotzdem glasklar erklärt.'
+  }[s.style];
+  const aufwand = {
+    schnell: 'Aufwand: SCHNELL — Gerichte sollen in max ~25 Min fertig sein.',
+    normal: 'Aufwand: NORMAL — 30 bis 45 Min sind okay.',
+    lang: 'Aufwand: AUCH MAL LÄNGER — bis ~60 Min erlaubt wenn das Gericht es wert ist.'
+  }[s.effort];
+  return `Nutzer: Student in Amsterdam, kauft bei Albert Heijn (NL) ein, KEIN Tiefkühler.
+GERÄTE: nur normale Pfannen, normale Kochtöpfe, ein Airfryer und ein Optigrill (Kontaktgrill).
+NICHT VORHANDEN: KEIN Backofen, KEIN Schmortopf/Bräter, KEIN Wok, KEINE Mikrowelle. Niemals Gerichte vorschlagen die Ofen oder Schmortopf brauchen (kein Überbacken, kein Schmoren im Ofen, keine Aufläufe die in den Ofen müssen, kein Braten im Ofen). Alles muss auf dem Herd, im Airfryer oder im Optigrill machbar sein.
+Einstellungen diese Woche: ${s.cookDays} Koch-Tage, ${s.portions} Portionen pro Kochvorgang (großzügig, hungriger Erwachsener - NIEMALS Diät-Portionen).
+${stil}
+${aufwand}
+Budget: maximal ${s.budgetEur}€ für den GESAMTEN Einkauf dieser ${s.cookDays} Koch-Tage zusammen (nicht pro Tag, nicht pro Woche - pro Einkauf). Das Budget steuert NUR wie teuer die Zutaten sein dürfen, NICHT wie aufwändig oder fleischig die Gerichte sind - die Art der Gerichte kommt allein aus Stil und Aufwand oben.
 Jedes Gericht wird für 2 Mahlzeiten gekocht (gleicher Tag abends ODER nächster Tag).
 NIEMALS verwenden: ${s.exclude.join(', ')}.
-Einkaufsliste IMMER in echten Albert-Heijn-Verpackungsgrößen (z.B. "1 bakje champignons 250g", "1 pak gehakt 500g", "1 beker room 250ml") - die Gerichte so planen dass diese Packungen möglichst aufgehen und nichts im Müll landet.
-Wenn ein Gericht Wein braucht: konkrete Kaufempfehlung (Art + Beispiel, z.B. "trockener Rotwein, günstige Flasche, z.B. einfacher Merlot").`;
+WICHTIG ZUR EINKAUFSLISTE: Der Nutzer kauft zwar bei Albert Heijn in den Niederlanden, ist aber Deutscher. Schreibe ALLE Produktnamen auf DEUTSCH (z.B. "1 Packung Champignons 250g", "1 Packung Hackfleisch 500g", "1 Becher Sahne 250ml") - NICHT auf Niederländisch. Trotzdem in den real bei AH erhältlichen Packungsgrößen, und Gerichte so planen dass Packungen aufgehen und nichts im Müll landet.
+Wenn ein Gericht Wein braucht: konkrete Kaufempfehlung auf Deutsch (Art + Beispiel, z.B. "trockener Rotwein, günstige Flasche, z.B. einfacher Merlot").`;
 }
 
 /* ═══════════ PROMPTS ═══════════ */
@@ -21,13 +34,13 @@ const P = {
 
 Erstelle einen abgestimmten Wochenplan mit GENAU ${s.cookDays} Gerichten.
 KERN-REGEL: Die Gerichte MÜSSEN sich Zutaten teilen, sodass Albert-Heijn-Packungen komplett aufgebraucht werden (eine 250g Champignon-Packung → mehrere Pilzgerichte, ein Becher Sahne → mehrere Sahnegerichte). Verderbliches eher früh in der Woche.
-Budget-Logik: günstige Basis (Hack, Pasta, Eier, Hähnchenschenkel) + max 1-2 teure Highlights.
+Die ART der Gerichte richtet sich nach Stil und Aufwand (siehe oben), NICHT nach dem Budget. Das Budget ist nur die Obergrenze für die Gesamt-Einkaufskosten - bleib darunter, aber lass es NICHT die Gerichte aufwändiger oder fleischiger machen.
 Klassisch europäisch (deutsch/französisch/italienisch/etwas amerikanisch).
 ${wish ? `BESONDERS DIESE WOCHE BEACHTEN: ${wish}` : ''}
 
 NUR JSON, keine Erklärung:
 {"schaetzkosten":32,"abfall":"0 Zutaten landen im Müll","einkauf_hinweis":"kurzer Hinweis","gerichte":[{"id":"g1","name":"Name","beschreibung":"appetitlicher Satz","min":35,"hauptzutaten":["Hackfleisch","Paprika"],"wein":null,"reihenfolge":1,"hinweis":"z.B. verderblich, früh kochen"}]}
-wein = null oder konkrete Kaufempfehlung als String. reihenfolge 1 = zuerst kochen.`,
+schaetzkosten = geschätzte Gesamtkosten des Einkaufs in € (muss <= ${s.budgetEur} sein). wein = null oder konkrete Kaufempfehlung auf Deutsch als String. reihenfolge 1 = zuerst kochen.`,
 
   swap: (s, others, dishName) => `${ctxLine(s)}
 Tausche das Gericht "${dishName}" gegen ein ANDERES aus. Es MUSS zu diesen anderen Gerichten der Woche passen (Zutaten-Logik erhalten, damit AH-Packungen aufgehen): ${others}.
@@ -35,14 +48,23 @@ NUR JSON:
 {"id":"GLEICHE_ID","name":"Neuer Name","beschreibung":"Satz","min":35,"hauptzutaten":["..."],"wein":null,"reihenfolge":GLEICHE_ZAHL,"hinweis":"..."}`,
 
   recipe: (s, dish) => `${ctxLine(s)}
-Erstelle das Rezept für "${dish.name}" (${s.portions} Portionen, für 2 Mahlzeiten gekocht = entsprechend mehr).
-Format auf Deutsch:
+Erstelle ein SEHR PRÄZISES, narrensicheres Rezept für "${dish.name}" (${s.portions} Portionen, für 2 Mahlzeiten gekocht = entsprechend größere Mengen).
+Der Nutzer ist UNERFAHREN. Das Rezept muss so genau sein dass jemand der kaum kocht es ohne Vorwissen hinkriegt. Pflicht für JEDEN Schritt:
+- Sag explizit OB Öl/Butter/Fett benutzt wird, WELCHES (z.B. "neutrales Öl wie Sonnenblumenöl" oder "Butter"), und WIE VIEL (z.B. "2 EL").
+- Sag die HITZE konkret (z.B. "mittlere Hitze", "hohe Hitze", "Stufe 7 von 9").
+- Sag GENAU wann was in die Pfanne/den Topf kommt und in welcher Reihenfolge.
+- Sag die ZEIT pro Schritt (z.B. "ca. 4-5 Minuten") UND das Erkennungsmerkmal wann es fertig ist (z.B. "bis das Hack braun und krümelig ist", "bis die Zwiebeln glasig sind", "bis die Sauce eine sämige Konsistenz hat und an einem Löffel haften bleibt").
+- Geräte nur: Herd/Pfanne/Topf, Airfryer oder Optigrill. Niemals Ofen oder Schmortopf.
+Format auf Deutsch, GENAU so:
 **Zutaten** (für ${s.portions} Portionen, 2 Mahlzeiten)
-• Menge Zutat (in AH-Größen wo sinnvoll)
+• Menge Zutat (deutsche Namen, AH-Packungsgrößen wo sinnvoll)
+
 **Zubereitung**
-1. Schritt — knapp, mit Profi-Tipp wo es zählt
+1. (Sehr konkreter Schritt mit Öl-Angabe, Hitze, Zeit, Erkennungsmerkmal)
+2. ...
+(So viele Schritte wie nötig, lieber ein Schritt mehr und genauer.)
 ${dish.wein ? `**Wein:** ${dish.wein}` : ''}
-**Reste:** Wie man die 2. Mahlzeit aufbewahrt/aufwärmt (kein Tiefkühler).`,
+**Reste:** Wie man die 2. Mahlzeit aufbewahrt und am nächsten Tag aufwärmt (kein Tiefkühler, keine Mikrowelle - also auf dem Herd aufwärmen).`,
 
   shop: (s, dishes) => `${ctxLine(s)}
 Erstelle EINEN kompletten Einkaufszettel für diese Gerichte: ${dishes}.
@@ -153,11 +175,11 @@ const Seg = ({ value, set, opts }) => (
       ))}
     </div>
   );
-const Stepper = ({ v, set, min, max }) => (
+const Stepper = ({ v, set, min, max, step = 1, suffix = '' }) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <button onClick={() => set(Math.max(min, v - 1))} style={{ width: 30, height: 30, borderRadius: '50%', border: 'none', background: TH.C.surf2, color: TH.C.ink, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Minus size={14} /></button>
-      <span style={{ fontFamily: 'var(--font-display)', fontSize: 19, fontWeight: 500, minWidth: 22, textAlign: 'center', color: TH.C.ink }}>{v}</span>
-      <button onClick={() => set(Math.min(max, v + 1))} style={{ width: 30, height: 30, borderRadius: '50%', border: 'none', background: TH.C.surf2, color: TH.C.ink, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Plus size={14} /></button>
+      <button onClick={() => set(Math.max(min, v - step))} style={{ width: 30, height: 30, borderRadius: '50%', border: 'none', background: TH.C.surf2, color: TH.C.ink, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Minus size={14} /></button>
+      <span style={{ fontFamily: 'var(--font-display)', fontSize: 19, fontWeight: 500, minWidth: suffix ? 44 : 22, textAlign: 'center', color: TH.C.ink }}>{v}{suffix}</span>
+      <button onClick={() => set(Math.min(max, v + step))} style={{ width: 30, height: 30, borderRadius: '50%', border: 'none', background: TH.C.surf2, color: TH.C.ink, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Plus size={14} /></button>
     </div>
   );
 const Field = ({ label, children }) => (
@@ -210,8 +232,9 @@ export default function App() {
   const dark = useDark();
 
   const [cookDays, setCookDays] = useState(4);
-  const [timeMode, setTimeMode] = useState('mix');
-  const [budget, setBudget] = useState('mehr');
+  const [style, setStyle] = useState('gemischt');
+  const [effort, setEffort] = useState('normal');
+  const [budgetEur, setBudgetEur] = useState(30);
   const [portions, setPortions] = useState(2);
   const [exclude, setExclude] = useState(['Knoblauch', 'Oliven']);
   const [exInput, setExInput] = useState('');
@@ -244,7 +267,7 @@ export default function App() {
   const rescueEnd = useRef(null);
   const cookEnd = useRef(null);
 
-  const settings = { cookDays, timeMode, budget, portions, exclude };
+  const settings = { cookDays, style, effort, budgetEur, portions, exclude };
 
   useEffect(() => {
     if (!document.querySelector('link[data-kp3]')) {
@@ -254,8 +277,9 @@ export default function App() {
     }
     const g = store.get.bind(store);
     if (g('cookDays') != null) setCookDays(g('cookDays'));
-    if (g('timeMode')) setTimeMode(g('timeMode'));
-    if (g('budget')) setBudget(g('budget'));
+    if (g('style')) setStyle(g('style'));
+    if (g('effort')) setEffort(g('effort'));
+    if (g('budgetEur') != null) setBudgetEur(g('budgetEur'));
     if (g('portions') != null) setPortions(g('portions'));
     if (g('exclude')) setExclude(g('exclude'));
     if (g('bundle')) setBundle(g('bundle'));
@@ -266,8 +290,9 @@ export default function App() {
     setHydrated(true);
   }, []);
   useEffect(() => { if (hydrated) store.set('cookDays', cookDays); }, [cookDays, hydrated]);
-  useEffect(() => { if (hydrated) store.set('timeMode', timeMode); }, [timeMode, hydrated]);
-  useEffect(() => { if (hydrated) store.set('budget', budget); }, [budget, hydrated]);
+  useEffect(() => { if (hydrated) store.set('style', style); }, [style, hydrated]);
+  useEffect(() => { if (hydrated) store.set('effort', effort); }, [effort, hydrated]);
+  useEffect(() => { if (hydrated) store.set('budgetEur', budgetEur); }, [budgetEur, hydrated]);
   useEffect(() => { if (hydrated) store.set('portions', portions); }, [portions, hydrated]);
   useEffect(() => { if (hydrated) store.set('exclude', exclude); }, [exclude, hydrated]);
   useEffect(() => { if (hydrated) store.set('bundle', bundle); }, [bundle, hydrated]);
@@ -431,8 +456,11 @@ export default function App() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
                 <span style={{ fontSize: 13.5, color: C.ink }}>Portionen / Kochvorgang</span><Stepper v={portions} set={setPortions} min={1} max={6} />
               </div>
-              <Field label="Zeit"><Seg value={timeMode} set={setTimeMode} opts={[['schnell', 'Schnell'], ['mix', 'Gemischt'], ['zeit', 'Hab Zeit']]} /></Field>
-              <Field label="Budget"><Seg value={budget} set={setBudget} opts={[['guenstig', '~20€'], ['normal', '~30€'], ['mehr', '~40€']]} /></Field>
+              <Field label="Stil"><Seg value={style} set={setStyle} opts={[['alltag', 'Alltagsküche'], ['gemischt', 'Gemischt'], ['kulinarisch', 'Kulinarisch']]} /></Field>
+              <Field label="Aufwand"><Seg value={effort} set={setEffort} opts={[['schnell', 'Schnell'], ['normal', 'Normal'], ['lang', 'Auch mal länger']]} /></Field>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
+                <span style={{ fontSize: 13.5, color: C.ink }}>Budget <span style={{ color: C.ink3, fontSize: 12 }}>(pro Einkauf)</span></span><Stepper v={budgetEur} set={setBudgetEur} min={10} max={70} step={5} suffix="€" />
+              </div>
               <Field label="Nie verwenden (gespeichert)">
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
                   {exclude.map(x => (
