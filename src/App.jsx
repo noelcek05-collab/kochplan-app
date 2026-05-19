@@ -357,7 +357,7 @@ export default function App() {
   const genShop = async () => {
     if (shopLoad || !bundle) return;
     setShopLoad(true); setShop('');
-    const r = await callClaude([{ role: 'user', content: P.shop(settings, bundle.gerichte.map(g => g.name).join(', ')) }], 'Du erstellst Einkaufslisten. Nur die Liste.', 1400);
+    const r = await callClaude([{ role: 'user', content: P.shop(settings, bundle.gerichte.map(g => `${g.name} (Zutaten: ${g.hauptzutaten.join(', ')})`).join(' | ')) }], 'Du erstellst Einkaufslisten. Nur die Liste.', 1400);
     setShop(r.text || r.error); setShopLoad(false);
   };
 
