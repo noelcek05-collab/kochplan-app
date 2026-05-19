@@ -73,10 +73,13 @@ Beispiel für guten Schritt: "3. Hitze auf mittel reduzieren. Sahne angießen, S
 ${dish.wein ? `\n**Wein:** ${dish.wein}` : ''}
 **Reste:** Abkühlen lassen, abgedeckt in den Kühlschrank (hält 1–2 Tage). Nächsten Tag: Pfanne auf mittlere Hitze, Reste rein, Schuss Wasser dazu, Deckel drauf, 3–4 Min warm werden lassen.`,
 
-  shop: (s, dishes) => `Einkaufszettel für: ${dishes}.
-Nutzer kauft bei AH in Amsterdam (NL). Mengen in AH-Packungsgrößen. ALLE Namen auf DEUTSCH.
-NICHT auf die Liste: ${s.pantry.join(', ')}.${s.leftovers ? ` Bereits vorhanden: ${s.leftovers}.` : ''}
-Gleiche Zutaten zusammenfassen. Kategorien mit Emoji: 🥩 Fleisch/Fisch · 🥦 Gemüse · 🥛 Kühlregal · 🍝 Trocken/Konserven · 🧂 Gewürze · 🍷 Wein
+  shop: (s, dishes) => `Einkaufszettel für diese Gerichte: ${dishes}.
+Nutzer kauft bei Albert Heijn Amsterdam (NL). ALLE Produktnamen auf DEUTSCH.
+NIEMALS auf die Liste: ${s.exclude.join(', ')} — diese Zutaten kommen in keinem Gericht vor und werden NICHT eingekauft.
+NICHT auf die Liste (immer vorhanden): ${s.pantry.join(', ')}.${s.leftovers ? ` Bereits vorhanden: ${s.leftovers}.` : ''}
+Gleiche Zutaten zusammenfassen. Mengen in realen AH-NL Packungsgrößen — nutze diese echten Größen:
+Hackfleisch: 300g oder 500g · Hähnchenbrust: 600g · Lachs: 2 Stück (~300g) · Pasta/Spaghetti: 500g · Reis: 500g oder 1kg · Sahne: 250ml · Schmand: 200g · Champignons: 250g oder 500g · Zwiebeln: Netz 1kg · Kartoffeln: 1kg oder 2kg (KEIN 1,5kg) · Paprika: einzeln (~80g/Stück) · Passierte Tomaten: 500g · Gehackte Tomaten: 400g Dose · Käse gerieben: 150g oder 200g
+Kategorien mit Emoji: 🥩 Fleisch/Fisch · 🥦 Gemüse · 🥛 Kühlregal · 🍝 Trocken/Konserven · 🧂 Gewürze · 🍷 Wein
 Kein Intro, direkt die Liste.`,
 
   today: (s, plan, dayName) => `Heute ${dayName}. Wochenplan (✓=gekocht): ${plan}. ${s.portions} Portionen/Kochvorgang.
@@ -346,6 +349,7 @@ export default function App() {
         gerichte: b.gerichte.map(g => g.id === dish.id ? { ...j, id: dish.id, reihenfolge: dish.reihenfolge } : g)
       }));
       setRecipes(p => { const n = { ...p }; delete n[dish.id]; return n; });
+      setShop(''); // Einkaufszettel ist veraltet nach Tausch
     }
     setSwapId(null);
   };
