@@ -45,19 +45,28 @@ Tausche "${dishName}" gegen ein ANDERES. Muss zu diesen Gerichten passen (Zutate
 NUR JSON: {"id":"GLEICHE_ID","name":"...","beschreibung":"...","min":30,"hauptzutaten":["..."],"wein":null,"reihenfolge":GLEICHE_ZAHL,"hinweis":"..."}`,
 
   recipe: (s, dish) => `${recipeCtx(s)}
-Rezept für "${dish.name}" — ${s.portions} Portionen, wird für 2 Mahlzeiten gekocht.
+Rezept für "${dish.name}" — ${s.portions} Portionen, für 2 Mahlzeiten gekocht.
 
-Schreibe es PRÄZISE und VOLLSTÄNDIG. Jeder Schritt braucht: Öl/Fett ja/nein + welches + Menge, Hitze konkret (z.B. "mittlere Hitze"), was wann reinkommt, Zeit pro Schritt, Erkennungsmerkmal wann fertig (z.B. "bis die Zwiebeln glasig sind").
+Struktur GENAU so (wie ein professionelles Kochportal):
 
-Format:
 **Zutaten** (${s.portions} Portionen / 2 Mahlzeiten)
 • Menge Zutat
 
+**Vorbereitung** *(weglassen wenn nicht nötig)*
+• Was vor dem Kochen erledigt wird: Schneiden, Abmessen, Marinieren etc.
+• z.B. "Zwiebel in feine Würfel schneiden" / "Fleisch aus dem Kühlschrank nehmen, Zimmertemperatur"
+
 **Zubereitung**
-1. Schritt (Hitze, Öl/Fett, Zeit, Erkennungsmerkmal)
-...alle Schritte bis fertig...
-${dish.wein ? `**Wein:** ${dish.wein}` : ''}
-**Reste:** Im Kühlschrank aufbewahren, am nächsten Tag in der Pfanne aufwärmen (kein Tiefkühler).`,
+Nummerierte Schritte — EINE Aktion pro Schritt, kurz und klar.
+Jeder Schritt enthält was relevant ist:
+- Hitze (z.B. "mittlere Hitze", "hohe Hitze")
+- Öl/Fett wenn neu dazukommt (z.B. "2 EL Öl erhitzen")  
+- Genau was rein kommt
+- Zeit + Erkennungsmerkmal (z.B. "3–4 Min, bis die Zwiebeln glasig und leicht goldbraun sind")
+
+Beispiel für guten Schritt: "3. Hitze auf mittel reduzieren. Sahne angießen, Senf einrühren. 2–3 Min köcheln lassen bis die Sauce leicht eindickt und cremig wird."
+${dish.wein ? `\n**Wein:** ${dish.wein}` : ''}
+**Reste:** Abkühlen lassen, abgedeckt in den Kühlschrank (hält 1–2 Tage). Nächsten Tag: Pfanne auf mittlere Hitze, Reste rein, Schuss Wasser dazu, Deckel drauf, 3–4 Min warm werden lassen.`,
 
   shop: (s, dishes) => `Einkaufszettel für: ${dishes}.
 Nutzer kauft bei AH in Amsterdam (NL). Mengen in AH-Packungsgrößen. ALLE Namen auf DEUTSCH.
