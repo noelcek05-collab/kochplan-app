@@ -47,7 +47,7 @@ REGELN:
 - Wenn die anderen Gerichte schon viel Hack/Hähnchen/etc. haben: ANDERES Protein oder vegetarisch wählen.
 - Andere Gerichte diese Woche (nur zur Info, keine Pflicht sich anzupassen): ${others}
 - Budget: Gesamtplan bleibt unter ${s.budgetEur}€.
-NUR JSON: {"id":"GLEICHE_ID","name":"...","beschreibung":"...","min":30,"hauptzutaten":["..."],"wein":null,"reihenfolge":GLEICHE_ZAHL,"hinweis":"..."}`,
+NUR JSON: {"id":"GLEICHE_ID","name":"...","beschreibung":"...","min":30,"hauptzutaten":["..."],"wein":null,"reihenfolge":GLEICHE_ZAHL,"hinweis":"...","neue_gesamtkosten":27}`,
 
   recipe: (s, dish) => `${recipeCtx(s)}
 Rezept für "${dish.name}" — ${s.portions} Portionen, für 2 Mahlzeiten gekocht.
@@ -340,7 +340,11 @@ export default function App() {
     const r = await callClaude([{ role: 'user', content: P.swap(settings, others, dish.name) }], 'Du gibst nur valides JSON zurück.', 700);
     const j = r.text ? parseJSON(r.text) : null;
     if (j && j.name) {
-      setBundle(b => ({ ...b, gerichte: b.gerichte.map(g => g.id === dish.id ? { ...j, id: dish.id, reihenfolge: dish.reihenfolge } : g) }));
+      setBundle(b => ({
+        ...b,
+        schaetzkosten: j.neue_gesamtkosten || b.schaetzkosten,
+        gerichte: b.gerichte.map(g => g.id === dish.id ? { ...j, id: dish.id, reihenfolge: dish.reihenfolge } : g)
+      }));
       setRecipes(p => { const n = { ...p }; delete n[dish.id]; return n; });
     }
     setSwapId(null);
